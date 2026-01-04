@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Foundational resources for yourdomain.com - Includes DNS (Route 53), SSL (ACM), GitHub Connections, and IAM roles for Git Sync.
+
+Resources:
+  SharedGitHubConnection:
+    Type: AWS::CodeConnections::Connection
+    Properties:
+      ConnectionName: github-org-connection
+      ProviderType: GitHub
+
+  YourDomainCertificate:
+    Type: 'AWS::CertificateManager::Certificate'
+    Properties:
+      DomainName: yourdomain.com
+      SubjectAlternativeNames:
+        - www.yourdomain.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: yourdomain.com
+          HostedZoneId: !Ref YourDomainHostedZone
+
+  YourDomainHostedZone:
+    Type: 'AWS::Route53::HostedZone'
+    Properties:
+      Name: yourdomain.com
+
+  CloudFormationGitSyncRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: CloudFormationGitSyncRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.sync.codeconnections.amazonaws.com
+                - cloudformation.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/IAMFullAccess
+        - arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess
+      Policies:
+        - PolicyName: GitSyncExtraPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: EventBridgeManagement
+                Effect: Allow
+                Action:
+                  - 'events:PutRule'
+                  - 'events:PutTargets'
+                  - 'events:DescribeRule'
+                Resource: '*'
+              - Sid: PassConnectionPermission
+                Effect: Allow
+                Action:
+                  - 'codeconnections:PassConnection'
+                  - 'codeconnections:UseConnection'
+                  - 'codestar-connections:PassConnection'
+                  - 'codestar-connections:UseConnection'
+                Resource: !Sub 'arn:aws:codeconnections:${AWS::Region}:${AWS::AccountId}:connection/*'
+              - Sid: InfrastructurePermissions
+                Effect: Allow
+                Action:
+                  - 'cloudfront:CreateDistribution'
+                  - 'cloudfront:GetDistribution'
+                  - 'cloudfront:UpdateDistribution'
+                  - 'cloudfront:DeleteDistribution'
+                  - 'cloudfront:TagResource'
+                  - 'route53:CreateHostedZone'
+                  - 'route53:GetHostedZone'
+                  - 'route53:ChangeResourceRecordSets'
+                  - 'route53:ListResourceRecordSets'
+                  - 'route53:GetChange'
+                  - 'acm:DescribeCertificate'
+                  - 'acm:ListCertificates'
+                  - 'acm:RequestCertificate'
+                Resource: '*'
+
+Outputs:
+  ExportedConnectionArn:
+    Value: !Ref SharedGitHubConnection
+    Export:
+      Name: "GlobalResourcesStack-GitHubConnectionArn"
+  CertificateArn:
+    Value: !Ref YourDomainCertificate
+    Export:
+      Name: GlobalResources-CertificateArn
+  HostedZoneId:
+    Value: !Ref YourDomainHostedZone
+    Export:
+      Name: GlobalResources-HostedZoneId
