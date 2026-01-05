@@ -22,9 +22,9 @@ Resources:
       ValidationMethod: DNS
       DomainValidationOptions:
         - DomainName: yourdomain.com
-          HostedZoneId: !Ref JaiKHostedZoneId
+          HostedZoneId: !Ref YourDomainHostedZoneId
         - DomainName: www.yourdomain.com
-          HostedZoneId: !Ref JaiKHostedZoneId
+          HostedZoneId: !Ref YourDomainHostedZoneId
 
 Outputs:
   ExportedConnectionArn:
