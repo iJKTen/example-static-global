@@ -18,6 +18,8 @@ Resources:
       DomainValidationOptions:
         - DomainName: yourdomain.com
           HostedZoneId: !Ref YourDomainHostedZone
+        - DomainName: www.yourdomain.com
+          HostedZoneId: !Ref YourDomainHostedZone
 
   YourDomainHostedZone:
     Type: 'AWS::Route53::HostedZone'

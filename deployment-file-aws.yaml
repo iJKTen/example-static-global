@@ -1,0 +1,3 @@
+template-file-path: global-infra.yaml
+parameters:
+  JaiKHostedZoneId: YourHostedZoneID
