@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Foundational resources for yourdomain.com - Includes DNS (Route 53), SSL (ACM), GitHub Connections, and IAM roles for Git Sync.
+
+Parameters:
+  YourDomainHostedZoneId:
+    Type: String
+    Description: The ID of the Hosted Zone created by AWS when the domain was purchased.
+
+Resources:
+  SharedGitHubConnection:
+    Type: AWS::CodeConnections::Connection
+    Properties:
+      ConnectionName: github-org-connection
+      ProviderType: GitHub
+
+  YourDomainCertificate:
+    Type: 'AWS::CertificateManager::Certificate'
+    Properties:
+      DomainName: yourdomain.com
+      SubjectAlternativeNames:
+        - www.yourdomain.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: yourdomain.com
+          HostedZoneId: !Ref JaiKHostedZoneId
+        - DomainName: www.yourdomain.com
+          HostedZoneId: !Ref JaiKHostedZoneId
+
+Outputs:
+  ExportedConnectionArn:
+    Value: !Ref SharedGitHubConnection
+    Export:
+      Name: "GlobalResourcesStack-GitHubConnectionArn"
+  CertificateArn:
+    Value: !Ref YourDomainCertificate
+    Export:
+      Name: GlobalResources-CertificateArn
+  HostedZoneId:
+    Value: !Ref YourDomainHostedZone
+    Export:
+      Name: GlobalResources-HostedZoneId
