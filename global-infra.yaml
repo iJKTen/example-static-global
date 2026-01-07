@@ -67,6 +67,10 @@ Resources:
               - Sid: InfrastructurePermissions
                 Effect: Allow
                 Action:
+                  - 'cloudfront:CreateOriginAccessControl'
+                  - 'cloudfront:GetOriginAccessControl'
+                  - 'cloudfront:UpdateOriginAccessControl'
+                  - 'cloudfront:DeleteOriginAccessControl'
                   - 'cloudfront:CreateDistribution'
                   - 'cloudfront:GetDistribution'
                   - 'cloudfront:UpdateDistribution'
